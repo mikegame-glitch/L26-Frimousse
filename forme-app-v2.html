@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon programme</title>
+<style>
+  :root{
+    --bg:#0A0A0C;
+    --card:#141417;
+    --line: rgba(255,255,255,0.08);
+    --ink:#FFFFFF;
+    --ink-dim:#9A98A0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ================= HOME ================= */
+  #home .topbar{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:22px 20px 6px;
+  }
+  .eyebrow{
+    font-size:11px;letter-spacing:0.16em;text-transform:uppercase;
+    color:var(--ink-dim);font-weight:700;margin:0 0 4px;
+  }
+  h1.title{font-size:30px;font-weight:800;margin:0;letter-spacing:-0.01em;}
+
+  .ring-logo{width:42px;height:42px;position:relative;flex-shrink:0;margin-top:2px;}
+  .ring-logo svg{width:100%;height:100%;}
+
+  .grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    padding:18px 16px 40px;
+  }
+  .tile{
+    position:relative;border-radius:22px;overflow:hidden;
+    height:180px;
+    cursor:pointer;border:1px solid var(--line);
+  }
+  .tile img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
+    display:block;
+  }
+  .tile::before{
+    content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(180deg, rgba(10,10,12,0.02) 45%, rgba(10,10,12,0.88) 100%);
+  }
+  .tile-badge{
+    position:absolute;top:10px;right:10px;z-index:2;
+    display:flex;align-items:center;gap:6px;
+    background:rgba(10,10,12,0.55);backdrop-filter:blur(6px);
+    padding:5px 10px 5px 8px;border-radius:20px;
+    font-size:11px;font-weight:700;letter-spacing:0.02em;
+  }
+  .tile-badge .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .tile-info{position:absolute;bottom:12px;left:14px;right:14px;z-index:2;}
+  .tile-info h3{margin:0 0 3px;font-size:19px;font-weight:800;letter-spacing:0.01em;}
+  .tile-info p{margin:0;font-size:12px;color:rgba(255,255,255,0.75);}
+
+  /* ================= DETAIL ================= */
+  .hero{
+    position:relative;height:400px;overflow:hidden;
+  }
+  .hero img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(180deg, rgba(10,10,12,0.1) 0%, rgba(10,10,12,0.3) 45%, rgba(10,10,12,0.96) 100%);
+  }
+  .back-btn{
+    position:absolute;top:22px;left:16px;z-index:3;
+    width:36px;height:36px;border-radius:50%;
+    background:rgba(20,20,23,0.6);border:1px solid rgba(255,255,255,0.15);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .back-btn svg{width:16px;height:16px;}
+  .hero-content{position:absolute;left:20px;right:20px;bottom:22px;z-index:3;}
+  .hero-content h2{font-size:38px;font-weight:800;margin:0 0 10px;letter-spacing:-0.01em;}
+  .stats-row{display:flex;gap:22px;align-items:center;}
+  .stat{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:600;color:#E9E8EC;}
+  .stat svg{width:17px;height:17px;flex-shrink:0;}
+
+  .collapse-hint{display:flex;justify-content:center;padding:14px 0 6px;color:rgba(255,255,255,0.3);}
+  .collapse-hint svg{width:22px;height:22px;}
+
+  .round-label{
+    font-size:19px;font-weight:800;padding:14px 20px 10px;
+  }
+
+  .day-row{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 20px;cursor:pointer;
+    border-top:1px solid var(--line);
+  }
+  .day-row.dim{background:rgba(255,255,255,0.02);}
+  .day-thumb{
+    position:relative;width:64px;height:64px;border-radius:14px;overflow:hidden;
+    flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1);
+  }
+  .day-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+  .day-info{flex:1;min-width:0;}
+  .day-info h4{margin:0 0 3px;font-size:16px;font-weight:700;}
+  .day-info p{margin:0;font-size:13px;color:var(--ink-dim);}
+  .play-circle{
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
+    border:1.5px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .play-circle svg{width:13px;height:13px;margin-left:2px;}
+  .day-row.expanded .play-circle{
+    border-color:#4E9CFF;background:rgba(78,156,255,0.12);
+  }
+
+  /* inline youtube expand card */
+  .video-panel{
+    max-height:0;overflow:hidden;transition:max-height .35s ease;
+    background:#000;
+  }
+  .video-panel.open{max-height:420px;}
+  .video-panel-inner{padding:10px 16px 18px;}
+  .video-close-row{
+    display:flex;justify-content:flex-end;align-items:center;gap:6px;
+    padding:6px 2px 10px;color:var(--ink-dim);font-size:12px;font-weight:700;
+    letter-spacing:0.05em;cursor:pointer;
+  }
+  .video-close-row svg{width:13px;height:13px;}
+
+  .video-stage{
+    position:relative;width:100%;aspect-ratio:16/9;
+    border-radius:16px;overflow:hidden;background:#000;
+  }
+  .video-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;}
+  .video-stage .scrim{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.85) 100%);
+  }
+  .video-caption{
+    position:absolute;left:14px;bottom:44px;right:14px;z-index:2;
+    font-size:13px;font-weight:700;color:#fff;
+    text-shadow:0 1px 6px rgba(0,0,0,0.6);
+  }
+  .video-play-big{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:56px;height:56px;border-radius:14px;background:#FF3B30;
+    display:flex;align-items:center;justify-content:center;z-index:3;cursor:pointer;
+    box-shadow:0 6px 20px rgba(255,59,48,0.4);
+  }
+  .video-play-big svg{width:20px;height:20px;margin-left:3px;}
+  .yt-bar{
+    position:absolute;left:0;right:0;bottom:0;z-index:2;
+    display:flex;align-items:center;justify-content:flex-end;gap:6px;
+    padding:8px 12px;font-size:12px;font-weight:700;color:#fff;
+  }
+  .yt-bar svg{width:20px;height:14px;}
+  .video-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:4;}
+
+  .footer-bar{
+    position:sticky;bottom:0;margin:18px 16px 20px;
+    background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:18px;padding:16px 20px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .footer-bar span:first-child{color:var(--ink-dim);font-size:13px;font-weight:600;}
+  .footer-bar span:last-child{font-size:19px;font-weight:800;}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+  button, .tile, .day-row, .back-btn, .video-close-row, .video-play-big{outline-offset:2px;}
+  button:focus-visible, .tile:focus-visible, .day-row:focus-visible{outline:2px solid #fff;}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= HOME VIEW ================= -->
+  <div class="view active" id="home">
+    <div class="topbar">
+      <div>
+        <p class="eyebrow">Programme 6 semaines</p>
+        <h1 class="title">Mon programme</h1>
+      </div>
+      <div class="ring-logo">
+        <svg viewBox="0 0 42 42">
+          <circle cx="21" cy="21" r="18" fill="none" stroke="#FF4D67" stroke-width="3.5" stroke-dasharray="70 45" stroke-linecap="round" transform="rotate(-90 21 21)"/>
+          <circle cx="21" cy="21" r="13" fill="none" stroke="#34D399" stroke-width="3.5" stroke-dasharray="55 30" stroke-linecap="round" transform="rotate(-60 21 21)"/>
+          <circle cx="21" cy="21" r="8" fill="none" stroke="#4E9CFF" stroke-width="3.5" stroke-dasharray="35 15" stroke-linecap="round" transform="rotate(-30 21 21)"/>
+        </svg>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- ================= DETAIL VIEW ================= -->
+  <div class="view" id="detail">
+    <div class="hero" id="detailHero">
+      <div class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+      </div>
+      <div class="hero-content">
+        <h2 id="detailTitle"></h2>
+        <div class="stats-row">
+          <div class="stat">
+            <svg viewBox="0 0 24 24" fill="#FBBF24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+            <span id="detailKcal"></span>
+          </div>
+          <div class="stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#E9E8EC" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            <span id="detailTime"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapse-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8l6 6 6-6"/><path d="M6 13l6 6 6-6"/></svg>
+    </div>
+
+    <div id="roundsWrap"></div>
+
+    <div class="footer-bar">
+      <span>Durée totale</span>
+      <span id="footerTotal"></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const colors = ["#4E9CFF","#FF4D67","#34D399","#FBBF24","#A78BFA","#D1D5DB"];
+  const durations = [15,15,25,30];
+
+  const raw = [
+    ["eECcDxPClZ8","h8BhzGZO66o","Z4hBuibOVa4","hSgJd--UbKg"],
+    ["3CJge5yvQl0","nu7b9VmBKnE","TBHfI_i0Y18","SJQIhKXx4dU"],
+    ["-WnAL8a8uWQ","StLs16reCv8","EhZq-szyNNQ","iZ9V8S2jdKE"],
+    ["KQKrOWJguQU","6G48QTvaGuU","uZNbspDSvF8","mp4EsCWVJ6M"],
+    ["rvKcCGZs35c","ERV5zRFQGrQ","_8YBez6KEME","Zk40LMSqNaQ"],
+    ["1_kNjCo-k4k","pT9fQu5ZfTA","jFTxy-RfhKM","gerZD9T1oHE"]
+  ];
+
+  const weeks = raw.map((ids, wi) => {
+    const total = durations.reduce((a,b)=>a+b,0);
+    const kcal = Math.round(total * 8.5);
+    return {
+      index: wi,
+      color: colors[wi],
+      total,
+      kcal,
+      days: ids.map((id, di) => ({
+        id,
+        title: "Jour " + (di+1),
+        duration: durations[di] + " min",
+        thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+      }))
+    };
+  });
+
+  // fallback chain: try maxres -> hq -> mq thumbnail, so a photo is (almost) always visible
+  function imgTag(id, alt){
+    return `<img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="${alt}" loading="lazy"
+      onerror="this.onerror=null;this.src='https://img.youtube.com/vi/${id}/mqdefault.jpg'">`;
+  }
+
+  const gridEl = document.getElementById('grid');
+  weeks.forEach((week, wi) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.tabIndex = 0;
+    tile.style.background = `linear-gradient(160deg, ${week.color}33, #101014)`;
+    tile.innerHTML = `
+      ${imgTag(week.days[0].id, 'Semaine ' + (wi+1))}
+      <div class="tile-badge"><span class="dot" style="background:${week.color}"></span>${week.total} MIN</div>
+      <div class="tile-info">
+        <h3>SEMAINE ${wi+1}</h3>
+        <p>4 exercices · ${week.kcal} kcal</p>
+      </div>
+    `;
+    const go = () => openWeek(wi);
+    tile.addEventListener('click', go);
+    tile.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();go();} });
+    gridEl.appendChild(tile);
+  });
+
+  const homeView = document.getElementById('home');
+  const detailView = document.getElementById('detail');
+  const detailHero = document.getElementById('detailHero');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailKcal = document.getElementById('detailKcal');
+  const detailTime = document.getElementById('detailTime');
+  const roundsWrap = document.getElementById('roundsWrap');
+  const footerTotal = document.getElementById('footerTotal');
+
+  function openWeek(wi){
+    const week = weeks[wi];
+    detailHero.style.background = `linear-gradient(160deg, ${week.color}33, #101014)`;
+    const oldImg = detailHero.querySelector('img');
+    if(oldImg) oldImg.remove();
+    detailHero.insertAdjacentHTML('afterbegin', imgTag(week.days[0].id, 'Semaine ' + (wi+1)));
+    detailTitle.textContent = "Semaine " + (wi+1);
+    detailKcal.textContent = week.kcal + " Kcal";
+    detailTime.textContent = week.total + " min";
+    footerTotal.textContent = week.total + " min";
+
+    roundsWrap.innerHTML = '';
+    const round1 = week.days.slice(0,2);
+    const round2 = week.days.slice(2,4);
+
+    function buildRound(label, items, offset){
+      const labelEl = document.createElement('div');
+      labelEl.className = 'round-label';
+      labelEl.textContent = label;
+      roundsWrap.appendChild(labelEl);
+
+      items.forEach((day, i) => {
+        const idx = offset + i;
+        const row = document.createElement('div');
+        row.className = 'day-row';
+        row.tabIndex = 0;
+        row.dataset.idx = idx;
+        row.innerHTML = `
+          <div class="day-thumb" style="background:linear-gradient(160deg, ${week.color}33, #101014)">${imgTag(day.id, day.title)}</div>
+          <div class="day-info">
+            <h4>${day.title}</h4>
+            <p>${day.duration}</p>
+          </div>
+          <div class="play-circle">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        `;
+        const panel = document.createElement('div');
+        panel.className = 'video-panel';
+        panel.innerHTML = `
+          <div class="video-panel-inner">
+            <div class="video-close-row" data-close="${idx}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              FERMER
+            </div>
+            <div class="video-stage" data-stage="${idx}" style="background:linear-gradient(160deg, ${week.color}33, #101014)">
+              ${imgTag(day.id, day.title)}
+              <div class="scrim"></div>
+              <div class="video-caption">${day.title} · Semaine ${wi+1}</div>
+              <div class="video-play-big" data-play="${idx}">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div class="yt-bar">
+                Regarder sur YouTube
+                <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
+              </div>
+            </div>
+          </div>
+        `;
+
+        row.addEventListener('click', () => toggleRow(idx, day));
+        row.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleRow(idx, day);} });
+
+        roundsWrap.appendChild(row);
+        roundsWrap.appendChild(panel);
+      });
+    }
+
+    buildRound('Round 1', round1, 0);
+    buildRound('Round 2', round2, 2);
+
+    // wire close + play buttons after render
+    roundsWrap.querySelectorAll('[data-close]').forEach(el => {
+      el.addEventListener('click', (e) => { e.stopPropagation(); closeRow(el.dataset.close); });
+    });
+    roundsWrap.querySelectorAll('[data-play]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = el.dataset.play;
+        const day = week.days[idx];
+        const stage = roundsWrap.querySelector(`[data-stage="${idx}"]`);
+        stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${day.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+      });
+    });
+
+    homeView.classList.remove('active');
+    detailView.classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function toggleRow(idx, day){
+    const rows = roundsWrap.querySelectorAll('.day-row');
+    const panels = roundsWrap.querySelectorAll('.video-panel');
+    const row = [...rows].find(r => r.dataset.idx == idx);
+    const rowIndexInList = [...rows].indexOf(row);
+    const panel = panels[rowIndexInList];
+    const isOpen = panel.classList.contains('open');
+
+    panels.forEach(p => p.classList.remove('open'));
+    rows.forEach(r => r.classList.remove('expanded'));
+
+    if(!isOpen){
+      panel.classList.add('open');
+      row.classList.add('expanded');
+    } else {
+      const stage = panel.querySelector('.video-stage');
+      // reset stage back to thumbnail state if it had an iframe
+      if(stage.querySelector('iframe')){
+        stage.innerHTML = `
+          ${imgTag(day.id, day.title)}
+          <div class="scrim"></div>
+          <div class="video-caption">${day.title}</div>
+          <div class="video-play-big" data-play="${idx}">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="yt-bar">
+            Regarder sur YouTube
+            <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
+          </div>
+        `;
+        stage.querySelector('[data-play]').addEventListener('click', (e) => {
+          e.stopPropagation();
+          stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${day.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+        });
+      }
+    }
+  }
+
+  function closeRow(idx){
+    const rows = roundsWrap.querySelectorAll('.day-row');
+    const panels = roundsWrap.querySelectorAll('.video-panel');
+    const row = [...rows].find(r => r.dataset.idx == idx);
+    const rowIndexInList = [...rows].indexOf(row);
+    const panel = panels[rowIndexInList];
+    panel.classList.remove('open');
+    row.classList.remove('expanded');
+  }
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    detailView.classList.remove('active');
+    homeView.classList.add('active');
+  });
+</script>
+
+</body>
+</html>
