@@ -130,8 +130,16 @@
     display:flex;align-items:center;justify-content:center;
     font-size:11px;font-weight:800;
   }
+  .day-tile-multi{
+    position:absolute;top:38px;left:9px;z-index:2;
+    display:flex;align-items:center;gap:4px;
+    background:rgba(78,156,255,0.85);
+    padding:3px 8px 3px 6px;border-radius:14px;
+    font-size:9.5px;font-weight:800;letter-spacing:0.02em;
+  }
+  .day-tile-multi svg{width:10px;height:10px;}
   .day-tile-info{position:absolute;bottom:10px;left:12px;right:12px;z-index:2;}
-  .day-tile-info h4{margin:0;font-size:15px;font-weight:800;line-height:1.2;}
+  .day-tile-info h4{margin:0;font-size:14px;font-weight:800;line-height:1.25;}
   .day-tile.expanded{outline:2px solid #4E9CFF;}
 
   /* inline youtube expand card, shown full-width below the day grid */
@@ -139,7 +147,7 @@
     max-height:0;overflow:hidden;transition:max-height .35s ease;
     background:#000;margin:0 16px;border-radius:16px;
   }
-  .video-panel.open{max-height:420px;margin-bottom:12px;}
+  .video-panel.open{max-height:520px;margin-bottom:12px;}
   .video-panel-inner{padding:10px 0 0;}
   .video-close-row{
     display:flex;justify-content:space-between;align-items:center;gap:6px;
@@ -147,6 +155,22 @@
     letter-spacing:0.05em;cursor:pointer;
   }
   .video-close-row svg{width:13px;height:13px;}
+
+  /* tabs shown when a day has more than one video */
+  .video-tabs{
+    display:flex;gap:8px;padding:0 2px 10px;overflow-x:auto;
+  }
+  .video-tab{
+    flex:1 0 auto;min-width:0;
+    display:flex;flex-direction:column;gap:2px;
+    padding:8px 12px;border-radius:12px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+    cursor:pointer;
+  }
+  .video-tab span{font-size:10.5px;color:var(--ink-dim);font-weight:700;}
+  .video-tab strong{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .video-tab.active{background:#4E9CFF;border-color:#4E9CFF;}
+  .video-tab.active span{color:rgba(255,255,255,0.85);}
 
   .video-stage{
     position:relative;width:100%;aspect-ratio:16/9;
@@ -188,19 +212,19 @@
   .footer-bar span:last-child{font-size:19px;font-weight:800;}
 
   @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
-  button, .tile, .day-tile, .back-btn, .video-close-row, .video-play-big{outline-offset:2px;}
-  button:focus-visible, .tile:focus-visible, .day-tile:focus-visible{outline:2px solid #fff;}
+  button, .tile, .day-tile, .back-btn, .video-close-row, .video-play-big, .video-tab{outline-offset:2px;}
+  button:focus-visible, .tile:focus-visible, .day-tile:focus-visible, .video-tab:focus-visible{outline:2px solid #fff;}
 </style>
 </head>
 <body>
 
 <div class="app">
 
-  <!-- ================= HOME VIEW : 6 DOMAINES ================= -->
+  <!-- ================= HOME VIEW : DOMAINES ================= -->
   <div class="view active" id="home">
     <div class="topbar">
       <div>
-        <p class="eyebrow">Programme 6 semaines</p>
+        <p class="eyebrow">Programme 7 semaines</p>
         <h1 class="title">Mon programme</h1>
       </div>
       <div class="ring-logo">
@@ -252,7 +276,7 @@
 </div>
 
 <script>
-  const colors = ["#4E9CFF","#FF4D67","#34D399","#FBBF24","#A78BFA","#D1D5DB"];
+  const colors = ["#4E9CFF","#FF4D67","#34D399","#FBBF24","#A78BFA","#D1D5DB","#F97316"];
 
   // real, royalty-free Unsplash photos (Unsplash License — free to use)
   function u(id){ return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=80`; }
@@ -262,7 +286,8 @@
     u('photo-1485727749690-d091e8284ef3'), // Semaine 3
     u('photo-1434596922112-19c563067271'), // Semaine 4
     u('photo-1574680178050-55c6a6a96e0a'), // Semaine 5
-    u('photo-1518611012118-696072aa579a')  // Semaine 6
+    u('photo-1518611012118-696072aa579a'), // Semaine 6
+    u('photo-1517836357463-d25dfeac3438')  // Semaine 7
   ];
   const dayPhotos = [
     u('photo-1594381898411-846e7d193883'),
@@ -278,83 +303,115 @@
     return `<img src="${src}" alt="${alt}" loading="lazy" onerror="this.style.display='none'">`;
   }
 
-  // ===================== DONNÉES DU PROGRAMME (6 domaines) =====================
+  // ===================== DONNÉES DU PROGRAMME =====================
+  // Chaque jour contient un tableau "videos" : 1 vidéo la plupart du temps,
+  // parfois 2 quand il y a une séance complémentaire ("Jour X aussi").
   const weeksData = [
     {
       title: "Semaine 1",
       level: "Débutant",
-      exercises: [
-        { name: "Abdos / Fessiers", duration: 10, id: "gKEGtPB1GOk" },
-        { name: "Abdos / Fessiers", duration: 18, id: "IDkVSs-rHjU" },
-        { name: "Fessiers",         duration: 20, id: "7Aiu168ItwE" },
-        { name: "Hit",              duration: 8,  id: "VyjJ1rDRups" }
+      days: [
+        { videos: [ { name:"Abdos / Fessiers", duration:10, id:"gKEGtPB1GOk" } ] },
+        { videos: [ { name:"Abdos / Fessiers", duration:18, id:"IDkVSs-rHjU" } ] },
+        { videos: [ { name:"Fessiers",         duration:20, id:"7Aiu168ItwE" } ] },
+        { videos: [ { name:"Hit",              duration:8,  id:"VyjJ1rDRups" } ] }
       ]
     },
     {
       title: "Semaine 2",
       level: "Débutant",
-      exercises: [
-        { name: "Hit",       duration: 9,  id: "gGQXjL125Ds" },
-        { name: "Abdos",     duration: 12, id: "eEmLqnaAQT0" },
-        { name: "Pilates",   duration: 20, id: "Gx04Z8TV7Bg" },
-        { name: "Bras",      duration: 10, id: "V436C5c2j48" },
-        { name: "Fessiers",  duration: 8,  id: "wUnYEn3dA3I" }
+      days: [
+        { videos: [ { name:"Hit",     duration:9,  id:"gGQXjL125Ds" } ] },
+        { videos: [ { name:"Abdos",   duration:12, id:"eEmLqnaAQT0" } ] },
+        { videos: [ { name:"Pilates", duration:20, id:"Gx04Z8TV7Bg" } ] },
+        { videos: [
+            { name:"Bras",     duration:10, id:"V436C5c2j48" },
+            { name:"Fessiers", duration:8,  id:"wUnYEn3dA3I" }
+        ] }
       ]
     },
     {
       title: "Semaine 3",
       level: "Intermédiaire",
-      exercises: [
-        { name: "Abdos / Fessiers", duration: 15, id: "RTBbdxMs4P0" },
-        { name: "Hanche",           duration: 15, id: "uieo0Za1EmU" },
-        { name: "Jambe",            duration: 20, id: "wvY8sxlzveI" },
-        { name: "Hit",              duration: 15, id: "vMATl4DONzc" },
-        { name: "Abdos / Bras",     duration: 15, id: "7Lb20roJC78" }
+      days: [
+        { videos: [ { name:"Abdos / Fessiers", duration:15, id:"RTBbdxMs4P0" } ] },
+        { videos: [ { name:"Hanche",           duration:15, id:"uieo0Za1EmU" } ] },
+        { videos: [ { name:"Jambe",            duration:20, id:"wvY8sxlzveI" } ] },
+        { videos: [
+            { name:"Hit",          duration:15, id:"vMATl4DONzc" },
+            { name:"Abdos / Bras", duration:15, id:"7Lb20roJC78" }
+        ] }
       ]
     },
     {
       title: "Semaine 4",
       level: "Intermédiaire",
-      exercises: [
-        { name: "Jambe",            duration: 15, id: "YmKAgkIZg54" },
-        { name: "Hit",              duration: 15, id: "oPtWGMCVr8U" },
-        { name: "Abdos",            duration: 20, id: "yMrGX1aST2A" },
-        { name: "Abdos / Fessiers", duration: 25, id: "FWxDrJsSIN4" },
-        { name: "Cardio",           duration: 8,  id: "uQEiRFkgWt0" },
-        { name: "Cuisse",           duration: 15, id: "doBf7q7b6_k" },
-        { name: "Jambe / Fessiers", duration: 20, id: "I2rR31u0_Ng" },
-        { name: "Fessiers",         duration: 15, id: "iGKcWCgFMrA" },
-        { name: "Bras / Fessiers",  duration: 20, id: "JOYe_8An1cE" },
-        { name: "Abdos / Cuisse",   duration: 10, id: "gIoXhfJdauQ" }
+      days: [
+        { videos: [ { name:"Jambe", duration:15, id:"YmKAgkIZg54" } ] },
+        { videos: [ { name:"Hit",   duration:15, id:"oPtWGMCVr8U" } ] },
+        { videos: [ { name:"Abdos", duration:20, id:"yMrGX1aST2A" } ] },
+        { videos: [
+            { name:"Abdos / Fessiers", duration:25, id:"FWxDrJsSIN4" },
+            { name:"Complément",       duration:8,  id:"uQEiRFkgWt0" }
+        ] }
       ]
     },
     {
       title: "Semaine 5",
       level: "Intermédiaire",
-      exercises: [
-        { name: "Fessiers",         duration: 10, id: "-gairiudFSQ" },
-        { name: "Ventre",           duration: 8,  id: "Lu9JtHA_1iw" },
-        { name: "Abdos / Fessiers", duration: 15, id: "JSEe6x2SWYs" },
-        { name: "Fessiers",         duration: 12, id: "5iFDTQM9NVU" },
-        { name: "Abdos / Bras",     duration: 12, id: "dW3ORgtAXp8" },
-        { name: "Pilates",          duration: 25, id: "9BNeMIOcB-8" },
-        { name: "Abdos",            duration: 10, id: "etRyXgxWR_M" }
+      days: [
+        { videos: [ { name:"Cuisse",           duration:15, id:"doBf7q7b6_k" } ] },
+        { videos: [ { name:"Jambe / Fessiers",  duration:20, id:"I2rR31u0_Ng" } ] },
+        { videos: [ { name:"Fessiers",          duration:15, id:"iGKcWCgFMrA" } ] },
+        { videos: [
+            { name:"Bras / Fessiers", duration:20, id:"JOYe_8An1cE" },
+            { name:"Abdos / Cuisse",  duration:10, id:"gIoXhfJdauQ" }
+        ] }
       ]
     },
     {
       title: "Semaine 6",
+      level: "Intermédiaire",
+      days: [
+        { videos: [
+            { name:"Fessiers", duration:10, id:"-gairiudFSQ" },
+            { name:"Ventre",   duration:8,  id:"Lu9JtHA_1iw" }
+        ] },
+        { videos: [ { name:"Abdos / Fessiers", duration:15, id:"JSEe6x2SWYs" } ] },
+        { videos: [
+            { name:"Fessiers",      duration:12, id:"5iFDTQM9NVU" },
+            { name:"Abdos / Bras",  duration:12, id:"dW3ORgtAXp8" }
+        ] },
+        { videos: [
+            { name:"Pilates", duration:25, id:"9BNeMIOcB-8" },
+            { name:"Abdos",   duration:10, id:"etRyXgxWR_M" }
+        ] }
+      ]
+    },
+    {
+      title: "Semaine 7",
       level: "AV",
-      exercises: [
-        { name: "Cuisse",            duration: 15, id: "doBf7q7b6_k" },
-        { name: "Cuisse : Fessiers", duration: 15, id: "5rRyKHPHsd8" },
-        { name: "Fessiers",          duration: 25, id: "RmnjHwwrBog" },
-        { name: "Cardio",            duration: 35, id: "vz7tGAGARS4" }
+      days: [
+        { videos: [ { name:"Cuisse",            duration:15, id:"doBf7q7b6_k" } ] },
+        { videos: [ { name:"Cuisse : Fessiers",  duration:15, id:"5rRyKHPHsd8" } ] },
+        { videos: [ { name:"Fessiers",           duration:25, id:"RmnjHwwrBog" } ] },
+        { videos: [ { name:"Cardio",             duration:35, id:"vz7tGAGARS4" } ] }
       ]
     }
   ];
 
   const weeks = weeksData.map((w, wi) => {
-    const total = w.exercises.reduce((a,b)=>a+b.duration,0);
+    const days = w.days.map((d, di) => {
+      const total = d.videos.reduce((a,b)=>a+b.duration,0);
+      const title = d.videos.map(v=>v.name).join(" + ");
+      return {
+        videos: d.videos,
+        title,
+        totalDuration: total,
+        photo: dayPhotos[di % dayPhotos.length]
+      };
+    });
+    const total = days.reduce((a,b)=>a+b.totalDuration,0);
     const kcal = Math.round(total * 8.5);
     return {
       index: wi,
@@ -364,16 +421,11 @@
       total,
       kcal,
       hero: heroPhotos[wi % heroPhotos.length],
-      days: w.exercises.map((ex, di) => ({
-        id: ex.id,
-        title: ex.name,
-        duration: ex.duration + " min",
-        photo: dayPhotos[di % dayPhotos.length]
-      }))
+      days
     };
   });
 
-  // ===================== ACCUEIL : 6 TUILES (une par domaine) =====================
+  // ===================== ACCUEIL : UNE TUILE PAR SEMAINE =====================
   const gridEl = document.getElementById('grid');
   weeks.forEach((week, wi) => {
     const tile = document.createElement('div');
@@ -386,7 +438,7 @@
       <div class="tile-badge"><span class="dot" style="background:${week.color}"></span>${week.total} MIN</div>
       <div class="tile-info">
         <h3>${week.title.toUpperCase()}</h3>
-        <p>${week.days.length} exercices · ${week.kcal} kcal</p>
+        <p>${week.days.length} jours · ${week.kcal} kcal</p>
       </div>
     `;
     const go = () => openWeek(wi);
@@ -407,6 +459,8 @@
   const footerTotal = document.getElementById('footerTotal');
 
   let openIdx = null;
+
+  const multiIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
 
   // ===================== VUE SEMAINE : TUILES DE JOUR =====================
   function openWeek(wi){
@@ -431,10 +485,14 @@
       tile.className = 'day-tile';
       tile.tabIndex = 0;
       tile.dataset.idx = idx;
+      const multiBadge = day.videos.length > 1
+        ? `<div class="day-tile-multi">${multiIcon}×${day.videos.length}</div>`
+        : '';
       tile.innerHTML = `
         ${imgTag(day.photo, day.title)}
         <div class="day-tile-num">${idx+1}</div>
-        <div class="day-tile-badge">${day.duration}</div>
+        <div class="day-tile-badge">${day.totalDuration} min</div>
+        ${multiBadge}
         <div class="day-tile-info"><h4>${day.title}</h4></div>
       `;
       tile.addEventListener('click', () => selectDay(week, wi, idx));
@@ -463,38 +521,67 @@
     openIdx = idx;
     activeTile.classList.add('expanded');
 
-    videoSlot.innerHTML = `
-      <div class="video-panel open">
-        <div class="video-panel-inner">
-          <div class="video-close-row" id="videoClose">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            FERMER
-          </div>
-          <div class="video-stage" id="videoStage" style="background:linear-gradient(160deg, ${week.color}33, #101014)">
-            ${imgTag(day.photo, day.title)}
-            <div class="scrim"></div>
-            <div class="video-caption">${day.title} · ${day.duration} · ${week.title}</div>
-            <div class="video-play-big" id="videoPlay">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+    let activeVideoIdx = 0;
+
+    function renderPanel(){
+      const videos = day.videos;
+      const v = videos[activeVideoIdx];
+
+      const tabsHtml = videos.length > 1
+        ? `<div class="video-tabs">${videos.map((vid,i)=>`
+            <div class="video-tab ${i===activeVideoIdx?'active':''}" data-i="${i}" tabindex="0">
+              <strong>${vid.name}</strong>
+              <span>${vid.duration} min</span>
+            </div>`).join('')}</div>`
+        : '';
+
+      videoSlot.innerHTML = `
+        <div class="video-panel open">
+          <div class="video-panel-inner">
+            <div class="video-close-row" id="videoClose">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              FERMER
             </div>
-            <div class="yt-bar">
-              Regarder sur YouTube
-              <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
+            ${tabsHtml}
+            <div class="video-stage" id="videoStage" style="background:linear-gradient(160deg, ${week.color}33, #101014)">
+              ${imgTag(day.photo, v.name)}
+              <div class="scrim"></div>
+              <div class="video-caption">${v.name} · ${v.duration} min · ${week.title}</div>
+              <div class="video-play-big" id="videoPlay">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div class="yt-bar">
+                Regarder sur YouTube
+                <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
 
-    document.getElementById('videoClose').addEventListener('click', () => {
-      videoSlot.innerHTML = '';
-      openIdx = null;
-      activeTile.classList.remove('expanded');
-    });
-    document.getElementById('videoPlay').addEventListener('click', () => {
-      const stage = document.getElementById('videoStage');
-      stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${day.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-    });
+      document.getElementById('videoClose').addEventListener('click', () => {
+        videoSlot.innerHTML = '';
+        openIdx = null;
+        activeTile.classList.remove('expanded');
+      });
+      document.getElementById('videoPlay').addEventListener('click', () => {
+        const stage = document.getElementById('videoStage');
+        stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+      });
+
+      if(videos.length > 1){
+        videoSlot.querySelectorAll('.video-tab').forEach(tab => {
+          const switchTo = () => {
+            activeVideoIdx = parseInt(tab.dataset.i, 10);
+            renderPanel();
+          };
+          tab.addEventListener('click', switchTo);
+          tab.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();switchTo();} });
+        });
+      }
+    }
+
+    renderPanel();
 
     // scroll jusqu'au lecteur vidéo
     videoSlot.scrollIntoView({behavior:'smooth', block:'center'});
