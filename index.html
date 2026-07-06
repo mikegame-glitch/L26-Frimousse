@@ -66,8 +66,14 @@
   .tile-info{position:absolute;bottom:12px;left:14px;right:14px;z-index:2;}
   .tile-info h3{margin:0 0 3px;font-size:19px;font-weight:800;letter-spacing:0.01em;}
   .tile-info p{margin:0;font-size:12px;color:rgba(255,255,255,0.75);}
+  .tile-level{
+    position:absolute;top:10px;left:10px;z-index:2;
+    background:rgba(10,10,12,0.55);backdrop-filter:blur(6px);
+    padding:5px 10px;border-radius:20px;
+    font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;
+  }
 
-  /* ================= DETAIL ================= */
+  /* ================= DETAIL (WEEK -> DAYS) ================= */
   .hero{
     position:relative;height:400px;overflow:hidden;
   }
@@ -86,6 +92,10 @@
   }
   .back-btn svg{width:16px;height:16px;}
   .hero-content{position:absolute;left:20px;right:20px;bottom:22px;z-index:3;}
+  .hero-eyebrow{
+    font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-weight:800;
+    color:rgba(255,255,255,0.7);margin:0 0 6px;
+  }
   .hero-content h2{font-size:38px;font-weight:800;margin:0 0 10px;letter-spacing:-0.01em;}
   .stats-row{display:flex;gap:22px;align-items:center;}
   .stat{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:600;color:#E9E8EC;}
@@ -94,41 +104,46 @@
   .collapse-hint{display:flex;justify-content:center;padding:14px 0 6px;color:rgba(255,255,255,0.3);}
   .collapse-hint svg{width:22px;height:22px;}
 
-  .day-row{
-    display:flex;align-items:center;gap:14px;
-    padding:12px 20px;cursor:pointer;
-    border-top:1px solid var(--line);
+  /* Day tiles grid (matches home tile style, 2 per row) */
+  .day-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    padding:6px 16px 24px;
   }
-  .day-row.dim{background:rgba(255,255,255,0.02);}
-  .day-thumb{
-    position:relative;width:64px;height:64px;border-radius:14px;overflow:hidden;
-    flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1);
+  .day-tile{
+    position:relative;border-radius:20px;overflow:hidden;
+    height:150px;cursor:pointer;border:1px solid var(--line);
   }
-  .day-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
-  .day-info{flex:1;min-width:0;}
-  .day-info h4{margin:0 0 3px;font-size:16px;font-weight:700;}
-  .day-info p{margin:0;font-size:13px;color:var(--ink-dim);}
-  .play-circle{
-    width:38px;height:38px;border-radius:50%;flex-shrink:0;
-    border:1.5px solid rgba(255,255,255,0.25);
+  .day-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;}
+  .day-tile::before{
+    content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(180deg, rgba(10,10,12,0.05) 40%, rgba(10,10,12,0.9) 100%);
+  }
+  .day-tile-badge{
+    position:absolute;top:9px;right:9px;z-index:2;
+    background:rgba(10,10,12,0.55);backdrop-filter:blur(6px);
+    padding:4px 9px;border-radius:16px;font-size:10.5px;font-weight:700;
+  }
+  .day-tile-num{
+    position:absolute;top:9px;left:9px;z-index:2;
+    width:24px;height:24px;border-radius:50%;
+    background:rgba(10,10,12,0.55);backdrop-filter:blur(6px);
     display:flex;align-items:center;justify-content:center;
-    transition:border-color .2s ease, background .2s ease;
+    font-size:11px;font-weight:800;
   }
-  .play-circle svg{width:13px;height:13px;margin-left:2px;}
-  .day-row.expanded .play-circle{
-    border-color:#4E9CFF;background:rgba(78,156,255,0.12);
-  }
+  .day-tile-info{position:absolute;bottom:10px;left:12px;right:12px;z-index:2;}
+  .day-tile-info h4{margin:0;font-size:15px;font-weight:800;line-height:1.2;}
+  .day-tile.expanded{outline:2px solid #4E9CFF;}
 
-  /* inline youtube expand card */
+  /* inline youtube expand card, shown full-width below the day grid */
   .video-panel{
     max-height:0;overflow:hidden;transition:max-height .35s ease;
-    background:#000;
+    background:#000;margin:0 16px;border-radius:16px;
   }
-  .video-panel.open{max-height:420px;}
-  .video-panel-inner{padding:10px 16px 18px;}
+  .video-panel.open{max-height:420px;margin-bottom:12px;}
+  .video-panel-inner{padding:10px 0 0;}
   .video-close-row{
-    display:flex;justify-content:flex-end;align-items:center;gap:6px;
-    padding:6px 2px 10px;color:var(--ink-dim);font-size:12px;font-weight:700;
+    display:flex;justify-content:space-between;align-items:center;gap:6px;
+    padding:0 2px 10px;color:var(--ink-dim);font-size:12px;font-weight:700;
     letter-spacing:0.05em;cursor:pointer;
   }
   .video-close-row svg{width:13px;height:13px;}
@@ -173,15 +188,15 @@
   .footer-bar span:last-child{font-size:19px;font-weight:800;}
 
   @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
-  button, .tile, .day-row, .back-btn, .video-close-row, .video-play-big{outline-offset:2px;}
-  button:focus-visible, .tile:focus-visible, .day-row:focus-visible{outline:2px solid #fff;}
+  button, .tile, .day-tile, .back-btn, .video-close-row, .video-play-big{outline-offset:2px;}
+  button:focus-visible, .tile:focus-visible, .day-tile:focus-visible{outline:2px solid #fff;}
 </style>
 </head>
 <body>
 
 <div class="app">
 
-  <!-- ================= HOME VIEW ================= -->
+  <!-- ================= HOME VIEW : 6 DOMAINES ================= -->
   <div class="view active" id="home">
     <div class="topbar">
       <div>
@@ -199,13 +214,14 @@
     <div class="grid" id="grid"></div>
   </div>
 
-  <!-- ================= DETAIL VIEW ================= -->
+  <!-- ================= DETAIL VIEW : TUILES DE JOUR ================= -->
   <div class="view" id="detail">
     <div class="hero" id="detailHero">
       <div class="back-btn" id="backBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
       </div>
       <div class="hero-content">
+        <p class="hero-eyebrow" id="detailLevel"></p>
         <h2 id="detailTitle"></h2>
         <div class="stats-row">
           <div class="stat">
@@ -224,7 +240,8 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8l6 6 6-6"/><path d="M6 13l6 6 6-6"/></svg>
     </div>
 
-    <div id="roundsWrap"></div>
+    <div class="day-grid" id="dayGrid"></div>
+    <div id="videoSlot"></div>
 
     <div class="footer-bar">
       <span>Durée totale</span>
@@ -236,32 +253,24 @@
 
 <script>
   const colors = ["#4E9CFF","#FF4D67","#34D399","#FBBF24","#A78BFA","#D1D5DB"];
-  const durations = [15,15,25,30];
-
-  const raw = [
-    ["eECcDxPClZ8","h8BhzGZO66o","Z4hBuibOVa4","hSgJd--UbKg"],
-    ["3CJge5yvQl0","nu7b9VmBKnE","TBHfI_i0Y18","SJQIhKXx4dU"],
-    ["-WnAL8a8uWQ","StLs16reCv8","EhZq-szyNNQ","iZ9V8S2jdKE"],
-    ["KQKrOWJguQU","6G48QTvaGuU","uZNbspDSvF8","mp4EsCWVJ6M"],
-    ["rvKcCGZs35c","ERV5zRFQGrQ","_8YBez6KEME","Zk40LMSqNaQ"],
-    ["1_kNjCo-k4k","pT9fQu5ZfTA","jFTxy-RfhKM","gerZD9T1oHE"]
-  ];
 
   // real, royalty-free Unsplash photos (Unsplash License — free to use)
   function u(id){ return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=80`; }
   const heroPhotos = [
-    u('photo-1571019613454-1cb2f99b2d8b'), // S1 — woman exercising indoors
-    u('photo-1541534741688-6078c6bfb5c5'), // S2 — woman weight lifting
-    u('photo-1485727749690-d091e8284ef3'), // S3 — woman stretching
-    u('photo-1434596922112-19c563067271'), // S4 — battle ropes
-    u('photo-1574680178050-55c6a6a96e0a'), // S5 — woman lifting barbell
-    u('photo-1518611012118-696072aa579a')  // S6 — women doing yoga together
+    u('photo-1571019613454-1cb2f99b2d8b'), // Semaine 1
+    u('photo-1541534741688-6078c6bfb5c5'), // Semaine 2
+    u('photo-1485727749690-d091e8284ef3'), // Semaine 3
+    u('photo-1434596922112-19c563067271'), // Semaine 4
+    u('photo-1574680178050-55c6a6a96e0a'), // Semaine 5
+    u('photo-1518611012118-696072aa579a')  // Semaine 6
   ];
   const dayPhotos = [
-    u('photo-1594381898411-846e7d193883'), // Jour 1 — warm-up / floor work
-    u('photo-1550345332-09e3ac987658'),    // Jour 2 — toning
-    u('photo-1546483875-ad9014c88eba'),    // Jour 3 — dumbbells / strength
-    u('photo-1649887974297-4be052375a67')  // Jour 4 — full body / squat
+    u('photo-1594381898411-846e7d193883'),
+    u('photo-1550345332-09e3ac987658'),
+    u('photo-1546483875-ad9014c88eba'),
+    u('photo-1649887974297-4be052375a67'),
+    u('photo-1571731956672-f2b94d7dd0cb'),
+    u('photo-1517836357463-d25dfeac3438')
   ];
 
   // real img tag with a graceful fallback if a photo fails to load
@@ -269,24 +278,102 @@
     return `<img src="${src}" alt="${alt}" loading="lazy" onerror="this.style.display='none'">`;
   }
 
-  const weeks = raw.map((ids, wi) => {
-    const total = durations.reduce((a,b)=>a+b,0);
+  // ===================== DONNÉES DU PROGRAMME (6 domaines) =====================
+  const weeksData = [
+    {
+      title: "Semaine 1",
+      level: "Débutant",
+      exercises: [
+        { name: "Abdos / Fessiers", duration: 10, id: "gKEGtPB1GOk" },
+        { name: "Abdos / Fessiers", duration: 18, id: "IDkVSs-rHjU" },
+        { name: "Fessiers",         duration: 20, id: "7Aiu168ItwE" },
+        { name: "Hit",              duration: 8,  id: "VyjJ1rDRups" }
+      ]
+    },
+    {
+      title: "Semaine 2",
+      level: "Débutant",
+      exercises: [
+        { name: "Hit",       duration: 9,  id: "gGQXjL125Ds" },
+        { name: "Abdos",     duration: 12, id: "eEmLqnaAQT0" },
+        { name: "Pilates",   duration: 20, id: "Gx04Z8TV7Bg" },
+        { name: "Bras",      duration: 10, id: "V436C5c2j48" },
+        { name: "Fessiers",  duration: 8,  id: "wUnYEn3dA3I" }
+      ]
+    },
+    {
+      title: "Semaine 3",
+      level: "Intermédiaire",
+      exercises: [
+        { name: "Abdos / Fessiers", duration: 15, id: "RTBbdxMs4P0" },
+        { name: "Hanche",           duration: 15, id: "uieo0Za1EmU" },
+        { name: "Jambe",            duration: 20, id: "wvY8sxlzveI" },
+        { name: "Hit",              duration: 15, id: "vMATl4DONzc" },
+        { name: "Abdos / Bras",     duration: 15, id: "7Lb20roJC78" }
+      ]
+    },
+    {
+      title: "Semaine 4",
+      level: "Intermédiaire",
+      exercises: [
+        { name: "Jambe",            duration: 15, id: "YmKAgkIZg54" },
+        { name: "Hit",              duration: 15, id: "oPtWGMCVr8U" },
+        { name: "Abdos",            duration: 20, id: "yMrGX1aST2A" },
+        { name: "Abdos / Fessiers", duration: 25, id: "FWxDrJsSIN4" },
+        { name: "Cardio",           duration: 8,  id: "uQEiRFkgWt0" },
+        { name: "Cuisse",           duration: 15, id: "doBf7q7b6_k" },
+        { name: "Jambe / Fessiers", duration: 20, id: "I2rR31u0_Ng" },
+        { name: "Fessiers",         duration: 15, id: "iGKcWCgFMrA" },
+        { name: "Bras / Fessiers",  duration: 20, id: "JOYe_8An1cE" },
+        { name: "Abdos / Cuisse",   duration: 10, id: "gIoXhfJdauQ" }
+      ]
+    },
+    {
+      title: "Semaine 5",
+      level: "Intermédiaire",
+      exercises: [
+        { name: "Fessiers",         duration: 10, id: "-gairiudFSQ" },
+        { name: "Ventre",           duration: 8,  id: "Lu9JtHA_1iw" },
+        { name: "Abdos / Fessiers", duration: 15, id: "JSEe6x2SWYs" },
+        { name: "Fessiers",         duration: 12, id: "5iFDTQM9NVU" },
+        { name: "Abdos / Bras",     duration: 12, id: "dW3ORgtAXp8" },
+        { name: "Pilates",          duration: 25, id: "9BNeMIOcB-8" },
+        { name: "Abdos",            duration: 10, id: "etRyXgxWR_M" }
+      ]
+    },
+    {
+      title: "Semaine 6",
+      level: "AV",
+      exercises: [
+        { name: "Cuisse",            duration: 15, id: "doBf7q7b6_k" },
+        { name: "Cuisse : Fessiers", duration: 15, id: "5rRyKHPHsd8" },
+        { name: "Fessiers",          duration: 25, id: "RmnjHwwrBog" },
+        { name: "Cardio",            duration: 35, id: "vz7tGAGARS4" }
+      ]
+    }
+  ];
+
+  const weeks = weeksData.map((w, wi) => {
+    const total = w.exercises.reduce((a,b)=>a+b.duration,0);
     const kcal = Math.round(total * 8.5);
     return {
       index: wi,
-      color: colors[wi],
+      title: w.title,
+      level: w.level,
+      color: colors[wi % colors.length],
       total,
       kcal,
-      hero: heroPhotos[wi],
-      days: ids.map((id, di) => ({
-        id,
-        title: "Jour " + (di+1),
-        duration: durations[di] + " min",
-        photo: dayPhotos[di]
+      hero: heroPhotos[wi % heroPhotos.length],
+      days: w.exercises.map((ex, di) => ({
+        id: ex.id,
+        title: ex.name,
+        duration: ex.duration + " min",
+        photo: dayPhotos[di % dayPhotos.length]
       }))
     };
   });
 
+  // ===================== ACCUEIL : 6 TUILES (une par domaine) =====================
   const gridEl = document.getElementById('grid');
   weeks.forEach((week, wi) => {
     const tile = document.createElement('div');
@@ -294,11 +381,12 @@
     tile.tabIndex = 0;
     tile.style.background = `linear-gradient(160deg, ${week.color}33, #101014)`;
     tile.innerHTML = `
-      ${imgTag(week.hero, 'Semaine ' + (wi+1))}
+      ${imgTag(week.hero, week.title)}
+      <div class="tile-level">${week.level}</div>
       <div class="tile-badge"><span class="dot" style="background:${week.color}"></span>${week.total} MIN</div>
       <div class="tile-info">
-        <h3>SEMAINE ${wi+1}</h3>
-        <p>4 exercices · ${week.kcal} kcal</p>
+        <h3>${week.title.toUpperCase()}</h3>
+        <p>${week.days.length} exercices · ${week.kcal} kcal</p>
       </div>
     `;
     const go = () => openWeek(wi);
@@ -310,87 +398,48 @@
   const homeView = document.getElementById('home');
   const detailView = document.getElementById('detail');
   const detailHero = document.getElementById('detailHero');
+  const detailLevel = document.getElementById('detailLevel');
   const detailTitle = document.getElementById('detailTitle');
   const detailKcal = document.getElementById('detailKcal');
   const detailTime = document.getElementById('detailTime');
-  const roundsWrap = document.getElementById('roundsWrap');
+  const dayGrid = document.getElementById('dayGrid');
+  const videoSlot = document.getElementById('videoSlot');
   const footerTotal = document.getElementById('footerTotal');
 
+  let openIdx = null;
+
+  // ===================== VUE SEMAINE : TUILES DE JOUR =====================
   function openWeek(wi){
     const week = weeks[wi];
+    openIdx = null;
+
     detailHero.style.background = `linear-gradient(160deg, ${week.color}33, #101014)`;
     const oldImg = detailHero.querySelector('img');
     if(oldImg) oldImg.remove();
-    detailHero.insertAdjacentHTML('afterbegin', imgTag(week.hero, 'Semaine ' + (wi+1)));
-    detailTitle.textContent = "Semaine " + (wi+1);
+    detailHero.insertAdjacentHTML('afterbegin', imgTag(week.hero, week.title));
+    detailLevel.textContent = week.level;
+    detailTitle.textContent = week.title;
     detailKcal.textContent = week.kcal + " Kcal";
     detailTime.textContent = week.total + " min";
     footerTotal.textContent = week.total + " min";
 
-    roundsWrap.innerHTML = '';
+    dayGrid.innerHTML = '';
+    videoSlot.innerHTML = '';
 
-    function buildDays(items){
-      items.forEach((day, i) => {
-        const idx = i;
-        const row = document.createElement('div');
-        row.className = 'day-row';
-        row.tabIndex = 0;
-        row.dataset.idx = idx;
-        row.innerHTML = `
-          <div class="day-thumb" style="background:linear-gradient(160deg, ${week.color}33, #101014)">${imgTag(day.photo, day.title)}</div>
-          <div class="day-info">
-            <h4>${day.title}</h4>
-            <p>${day.duration}</p>
-          </div>
-          <div class="play-circle">
-            <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-        `;
-        const panel = document.createElement('div');
-        panel.className = 'video-panel';
-        panel.innerHTML = `
-          <div class="video-panel-inner">
-            <div class="video-close-row" data-close="${idx}">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              FERMER
-            </div>
-            <div class="video-stage" data-stage="${idx}" style="background:linear-gradient(160deg, ${week.color}33, #101014)">
-              ${imgTag(day.photo, day.title)}
-              <div class="scrim"></div>
-              <div class="video-caption">${day.title} · Semaine ${wi+1}</div>
-              <div class="video-play-big" data-play="${idx}">
-                <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-              </div>
-              <div class="yt-bar">
-                Regarder sur YouTube
-                <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
-              </div>
-            </div>
-          </div>
-        `;
-
-        row.addEventListener('click', () => toggleRow(idx, day));
-        row.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleRow(idx, day);} });
-
-        roundsWrap.appendChild(row);
-        roundsWrap.appendChild(panel);
-      });
-    }
-
-    buildDays(week.days);
-
-    // wire close + play buttons after render
-    roundsWrap.querySelectorAll('[data-close]').forEach(el => {
-      el.addEventListener('click', (e) => { e.stopPropagation(); closeRow(el.dataset.close); });
-    });
-    roundsWrap.querySelectorAll('[data-play]').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const idx = el.dataset.play;
-        const day = week.days[idx];
-        const stage = roundsWrap.querySelector(`[data-stage="${idx}"]`);
-        stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${day.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-      });
+    week.days.forEach((day, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'day-tile';
+      tile.tabIndex = 0;
+      tile.dataset.idx = idx;
+      tile.innerHTML = `
+        ${imgTag(day.photo, day.title)}
+        <div class="day-tile-num">${idx+1}</div>
+        <div class="day-tile-badge">${day.duration}</div>
+        <div class="day-tile-info"><h4>${day.title}</h4></div>
+      `;
+      tile.addEventListener('click', () => selectDay(week, wi, idx));
+      tile.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();selectDay(week, wi, idx);} });
+      dayGrid.appendChild(tile);
     });
 
     homeView.classList.remove('active');
@@ -398,52 +447,57 @@
     window.scrollTo(0,0);
   }
 
-  function toggleRow(idx, day){
-    const rows = roundsWrap.querySelectorAll('.day-row');
-    const panels = roundsWrap.querySelectorAll('.video-panel');
-    const row = [...rows].find(r => r.dataset.idx == idx);
-    const rowIndexInList = [...rows].indexOf(row);
-    const panel = panels[rowIndexInList];
-    const isOpen = panel.classList.contains('open');
+  // ===================== SÉLECTION D'UN JOUR : ARRIVÉE SUR LE PROGRAMME (VIDÉO) =====================
+  function selectDay(week, wi, idx){
+    const day = week.days[idx];
 
-    panels.forEach(p => p.classList.remove('open'));
-    rows.forEach(r => r.classList.remove('expanded'));
+    dayGrid.querySelectorAll('.day-tile').forEach(t => t.classList.remove('expanded'));
+    const activeTile = dayGrid.querySelector(`.day-tile[data-idx="${idx}"]`);
 
-    if(!isOpen){
-      panel.classList.add('open');
-      row.classList.add('expanded');
-    } else {
-      const stage = panel.querySelector('.video-stage');
-      // reset stage back to thumbnail state if it had an iframe
-      if(stage.querySelector('iframe')){
-        stage.innerHTML = `
-          ${imgTag(day.photo, day.title)}
-          <div class="scrim"></div>
-          <div class="video-caption">${day.title}</div>
-          <div class="video-play-big" data-play="${idx}">
-            <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <div class="yt-bar">
-            Regarder sur YouTube
-            <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
-          </div>
-        `;
-        stage.querySelector('[data-play]').addEventListener('click', (e) => {
-          e.stopPropagation();
-          stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${day.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-        });
-      }
+    if(openIdx === idx){
+      // referme si on reclique sur la même tuile
+      videoSlot.innerHTML = '';
+      openIdx = null;
+      return;
     }
-  }
+    openIdx = idx;
+    activeTile.classList.add('expanded');
 
-  function closeRow(idx){
-    const rows = roundsWrap.querySelectorAll('.day-row');
-    const panels = roundsWrap.querySelectorAll('.video-panel');
-    const row = [...rows].find(r => r.dataset.idx == idx);
-    const rowIndexInList = [...rows].indexOf(row);
-    const panel = panels[rowIndexInList];
-    panel.classList.remove('open');
-    row.classList.remove('expanded');
+    videoSlot.innerHTML = `
+      <div class="video-panel open">
+        <div class="video-panel-inner">
+          <div class="video-close-row" id="videoClose">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            FERMER
+          </div>
+          <div class="video-stage" id="videoStage" style="background:linear-gradient(160deg, ${week.color}33, #101014)">
+            ${imgTag(day.photo, day.title)}
+            <div class="scrim"></div>
+            <div class="video-caption">${day.title} · ${day.duration} · ${week.title}</div>
+            <div class="video-play-big" id="videoPlay">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="yt-bar">
+              Regarder sur YouTube
+              <svg viewBox="0 0 28 20"><rect width="28" height="20" rx="5" fill="#FF0000"/><path d="M11 6l8 4-8 4z" fill="#fff"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('videoClose').addEventListener('click', () => {
+      videoSlot.innerHTML = '';
+      openIdx = null;
+      activeTile.classList.remove('expanded');
+    });
+    document.getElementById('videoPlay').addEventListener('click', () => {
+      const stage = document.getElementById('videoStage');
+      stage.innerHTML = `<iframe src="https://www.youtube.com/embed/${day.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+    });
+
+    // scroll jusqu'au lecteur vidéo
+    videoSlot.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
   document.getElementById('backBtn').addEventListener('click', () => {
